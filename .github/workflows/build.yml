@@ -1,0 +1,57 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'pnpm'
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: latest
+    
+    - name: Install dependencies
+      run: pnpm install
+    
+    - name: Build
+      run: pnpm run build
+      env:
+        CI: true
+
+  # Optional: Deploy step if you want to deploy to GitHub Pages or other platforms
+  # deploy:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: read
+  #     pages: write
+  #     id-token: write
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - uses: actions/download-artifact@v4
+  #     with:
+  #       name: build-artifact
+  #       path: ./dist
+  #   - name: Deploy to GitHub Pages
+  #     uses: peaceiris/actions-gh-pages@v4
+  #     with:
+  #       github_token: ${{ secrets.GITHUB_TOKEN }}
+  #       publish_dir: ./dist
